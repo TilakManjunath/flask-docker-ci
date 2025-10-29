@@ -1,5 +1,5 @@
 # 🟦🟩 Blue-Green Deployment using Docker, Nginx, and GitHub Actions
-
+https://github.com/TilakManjunath/flask-docker-ci/actions/workflows/deploy.yml/badge.svg
 ## 📘 Overview
 This project demonstrates a **Blue-Green Deployment** setup using:
 - **Docker** for containerization  
