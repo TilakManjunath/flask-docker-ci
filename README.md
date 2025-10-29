@@ -1,88 +1,95 @@
-# Auto-build & push Docker image with GitHub Actions
+# 🟦🟩 Blue-Green Deployment using Docker, Nginx, and GitHub Actions
 
-This mini-project demonstrates automated container image building and pushing using **GitHub Actions**, **Docker**, and **Docker Hub**.  
-It containerizes a simple Flask app and automatically builds & pushes the image whenever code is pushed to the `main` branch (and optionally when you create Git tags).
+## 📘 Overview
+This project demonstrates a **Blue-Green Deployment** setup using:
+- **Docker** for containerization  
+- **Nginx** for traffic routing  
+- **GitHub Actions** for automated CI/CD  
+- **Docker Hub** for image hosting  
 
----
-
-## Project structure
-
-project-root/
-│
-├── app.py
-├── Dockerfile
-├── docker-compose.yml # optional
-├── .github/
-│ └── workflows/
-│ └── docker-build-push.yml
-└── README.md
+Whenever code is pushed to the `main` branch, GitHub Actions automatically:
+1. Builds Docker images for both the Blue and Green versions.
+2. Pushes them to Docker Hub.
+3. Enables seamless switching between environments using Nginx.
 
 ---
 
-## Files explained
+## 🧱 Project Structure
 
-- **`app.py`** - Minimal Flask app that responds with `Hello from GitHub Actions!` on `/` (port 5000).
-- **`Dockerfile`** - Builds a lightweight container image using `python:3.11-slim`, installs Flask, copies `app.py`, and runs it.
-- **`.github/workflows/docker-build-push.yml`** - GitHub Actions workflow that:
-  - Triggers on push to `main` and on tags matching `v*`.
-  - Logs in to Docker Hub using repository secrets.
-  - Builds & pushes the Docker image as `<DOCKERHUB_USERNAME>/<repo-name>:latest`.
-  - When you push a Git tag (e.g., `v1.0.0`), it also pushes images tagged with the tag name.
-- **`docker-compose.yml`** *(optional)* - Simple compose file to run locally.
+flask-docker-ci/
+├── app_blue/
+├── app_green/
+├── nginx/
+├── docker-compose.yml
+└── .github/workflows/deploy.yml
 
----
-
-## Setup on GitHub & Docker Hub
-
-1. **Create a Docker Hub account** (if you don't have one) at https://hub.docker.com.
-
-2. **Create a repository** on Docker Hub named the same as your GitHub repo (recommended but not required).
-
-3. **Create a Docker access token**:
-   - Sign in to Docker Hub → Account Settings → Security → New Access Token.
-   - Save the token securely (this will be used as `DOCKERHUB_TOKEN`).
-
-4. **Create GitHub repo** and push the project files.
-
-5. **Add GitHub repository secrets**:
-   - In GitHub, go to your repo → Settings → Secrets and variables → Actions → New repository secret.
-   - Add:
-     - `DOCKERHUB_USERNAME` — your Docker Hub username
-     - `DOCKERHUB_TOKEN` — the access token you created
+yaml
+Copy code
 
 ---
 
-## How the GitHub Actions workflow runs
+## ⚙️ Setup Instructions
 
-- On every push to `main`, GitHub Actions:
-  1. Checks out code.
-  2. Logs in to Docker Hub using the secrets.
-  3. Builds the Docker image.
-  4. Tags it as: `<DOCKERHUB_USERNAME>/<repo-name>:latest`.
-  5. Pushes it to Docker Hub.
-
-- If you push a Git tag (e.g., `git tag v1.0.0 && git push origin v1.0.0`), the workflow will also push images tagged `v1.0.0` and `release-v1.0.0`.
-
----
-
-## Local testing (before pushing)
-
-### 1) Run the Flask app locally (without Docker)
+### 1️⃣ Clone Repository
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate      # on Windows: .venv\Scripts\activate
-pip install Flask
-python app.py
-# open http://localhost:5000 and you should see: "Hello from GitHub Actions!"
-Build and run the Docker image locally
-# Build the image locally (replace <youruser> and <repo> as you like)
-docker build -t local-flask-demo:latest .
+git clone https://github.com/TilakManjunath/flask-docker-ci.git
+cd flask-docker-ci
+2️⃣ Configure GitHub Secrets
+In your GitHub repo:
 
-# Run it
-docker run -p 5000:5000 local-flask-demo:latest
+Go to Settings → Secrets and variables → Actions → New repository secret
 
-# open http://localhost:5000
+Add:
 
-3) Use Docker Compose (optional)
-docker compose up --build
-# open http://localhost:5000
+DOCKERHUB_USERNAME → your Docker Hub username
+
+DOCKERHUB_TOKEN → your Docker Hub access token
+
+🚀 GitHub Actions Workflow
+Each time you push to the main branch:
+
+Blue and Green Docker images are built
+
+Both are pushed to Docker Hub
+
+You’ll see logs under Actions → Blue-Green Deployment
+
+🧪 Run Locally
+Step 1: Build and Start
+bash
+Copy code
+docker-compose up --build
+Step 2: Access
+http://localhost → Nginx forwards traffic to the active version
+
+http://localhost:5000 → Blue app
+
+http://localhost:5001 → Green app
+
+Step 3: Switch Traffic
+In nginx/nginx.conf, comment out blue and enable green:
+
+nginx
+Copy code
+# server app_blue:5000;
+server app_green:5001;
+Rebuild and restart:
+
+bash
+Copy code
+docker-compose up --build
+🧰 Tools Used
+Flask — lightweight web framework
+
+Docker — containerization
+
+Nginx — reverse proxy
+
+GitHub Actions — CI/CD automation
+
+Docker Hub — image registry
+
+🏁 Result
+✅ Push code → GitHub Actions builds and pushes images
+✅ Nginx routes traffic between Blue and Green versions
+✅ Easy rollback or upgrade by switching environment

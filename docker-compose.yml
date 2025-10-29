@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  app_blue:
+    build: ./app_blue
+    container_name: app_blue
+    ports:
+      - "5000:5000"
+
+  app_green:
+    build: ./app_green
+    container_name: app_green
+    ports:
+      - "5001:5001"
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - app_blue
+      - app_green
+
